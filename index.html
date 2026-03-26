@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RojiNegro13 - Resultados en Vivo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1a1a1a; --bg2: #232323; --bg3: #2c2c2c;
+      --border: #333; --text1: #f5f5f5; --text2: #aaa; --text3: #666;
+      --red: #d42b2b; --green: #22c97a; --live: #e03030;
+    }
+    body { background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text1); }
+
+    .hdr { background: #1a1a1a; border-bottom: 3px solid var(--red); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; }
+    .channel-name { font-size: 30px; font-weight: 700; letter-spacing: -0.5px; color: var(--red); }
+    .live-pill { display: flex; align-items: center; gap: 6px; background: var(--live); color: #fff; font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 12px; }
+    .pulse { width: 7px; height: 7px; border-radius: 50%; background: #fff; animation: p 1s infinite; }
+    @keyframes p { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .nav { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 20px; overflow-x: auto; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav-tab { padding: 10px 16px; font-size: 14px; color: var(--text2); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: .15s; }
+    .nav-tab.active { color: var(--text1); border-bottom-color: var(--red); }
+    .nav-tab:hover { color: var(--text1); }
+
+    .section-title { padding: 10px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .section-title .flag { font-size: 18px; }
+    .section-title .name { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text1); }
+    .section-title .badge { margin-left: auto; background: var(--live); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
+    .section-title .badge.finished { background: var(--bg3); color: var(--text3); }
+
+    .grid { display: grid; grid-template-columns: 1fr 1px 1fr; }
+    .divider { background: var(--border); }
+
+    .match-row { display: flex; align-items: center; padding: 0 16px; min-height: 70px; border-bottom: 1px solid var(--border); background: var(--bg); transition: .1s; }
+    .match-row:hover { background: var(--bg3); }
+    .match-row:last-child { border-bottom: none; }
+
+    .time-col { width: 42px; flex-shrink: 0; text-align: center; }
+    .m-time { font-size: 13px; font-weight: 700; }
+    .m-time.live { color: var(--live); }
+    .m-time.fin  { color: var(--text3); }
+    .m-time.up   { color: #4a9eff; }
+
+    .teams-col { flex: 1; padding: 0 10px; }
+    .team-line { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+    .crest { width: 24px; height: 24px; border-radius: 50%; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; border: 0.5px solid var(--border); }
+    .t-name { font-size: 15px; color: var(--text1); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .t-name.dim { color: var(--text3); }
+
+    .score-col { width: 42px; text-align: center; flex-shrink: 0; }
+    .score-pair { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+    .s-num { font-size: 18px; font-weight: 700; color: var(--text1); line-height: 1; }
+    .s-num.dim { color: var(--text3); font-weight: 500; }
+
+    .bar-col { width: 14px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; align-items: center; margin-left: 2px; }
+    .win-bar { width: 3px; height: 15px; border-radius: 2px; background: var(--border); }
+    .win-bar.w { background: var(--red); }
+
+    .footer { background: #1a1a1a; border-top: 3px solid var(--red); padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .footer-left { font-size: 12px; color: var(--text3); }
+    .footer-left span { color: var(--red); font-weight: 600; }
+    .clock { font-size: 13px; color: var(--text3); }
+
+    .loading { text-align: center; padding: 40px; color: var(--text3); font-size: 15px; }
+    .error-msg { text-align: center; padding: 20px; color: var(--red); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="channel-name">RojiNegro13</div>
+  <div class="live-pill"><div class="pulse"></div>EN VIVO</div>
+</div>
+
+<div class="nav" id="navTabs">
+  <div class="nav-tab active" onclick="setTab('todos', this)">Todos</div>
+  <div class="nav-tab" onclick="setTab('ligamx', this)">Liga MX</div>
+  <div class="nav-tab" onclick="setTab('ucl', this)">Champions</div>
+  <div class="nav-tab" onclick="setTab('eliminatorias', this)">Eliminatorias</div>
+  <div class="nav-tab" onclick="setTab('mundial', this)">Mundial 2026</div>
+</div>
+
+<div id="content"><div class="loading">Cargando resultados...</div></div>
+
+<div class="footer">
+  <div class="footer-left">youtube.com/<span>@RojiNegro13</span></div>
+  <div class="clock" id="clock"></div>
+</div>
+
+<script>
+// ─── Traducciones de equipos ───────────────────────────────────────────────
+const NOMBRES_ES = {
+  // Liga MX
+  "Club America": "América", "Chivas": "Chivas", "Guadalajara": "Chivas",
+  "Cruz Azul": "Cruz Azul", "Tigres UANL": "Tigres", "Monterrey": "Monterrey",
+  "Atletico San Luis": "Atl. San Luis", "Club Tijuana": "Tijuana",
+  "Santos Laguna": "Santos", "Toluca": "Toluca", "Necaxa": "Necaxa",
+  "Queretaro": "Querétaro", "Atlas": "Atlas", "Pachuca": "Pachuca",
+  "Leon": "León", "Puebla": "Puebla", "Mazatlan": "Mazatlán",
+  "FC Juarez": "Juárez", "Club Necaxa": "Necaxa",
+  // Champions
+  "Real Madrid": "Real Madrid", "Barcelona": "Barcelona",
+  "Bayern Munich": "Bayern Munich", "Manchester City": "Man City",
+  "Paris Saint-Germain": "PSG", "Arsenal": "Arsenal",
+  "Liverpool": "Liverpool", "Inter Milan": "Inter",
+  "Borussia Dortmund": "Dortmund", "Atletico Madrid": "Atlético",
+  "Chelsea": "Chelsea", "Juventus": "Juventus",
+  "AC Milan": "Milan", "Napoli": "Napoli",
+  "Benfica": "Benfica", "Porto": "Porto",
+  // Eliminatorias / Selecciones
+  "Italy": "Italia", "Northern Ireland": "Irlanda del Norte",
+  "Wales": "Gales", "Bosnia and Herzegovina": "Bosnia",
+  "Ukraine": "Ucrania", "Sweden": "Suecia",
+  "Poland": "Polonia", "Albania": "Albania",
+  "Turkey": "Turquía", "Romania": "Rumanía",
+  "Slovakia": "Eslovaquia", "Kosovo": "Kosovo",
+  "Denmark": "Dinamarca", "North Macedonia": "Macedonia del Norte",
+  "Czech Republic": "Rep. Checa", "Czechia": "Rep. Checa",
+  "Republic of Ireland": "Irlanda", "Ireland": "Irlanda",
+  "Bolivia": "Bolivia", "Suriname": "Surinam",
+  "New Caledonia": "Nueva Caledonia", "Jamaica": "Jamaica",
+  "DR Congo": "R.D. Congo", "Iraq": "Irak",
+  "Mexico": "México", "United States": "EE.UU.", "Canada": "Canadá",
+  "Brazil": "Brasil", "Argentina": "Argentina", "Germany": "Alemania",
+  "France": "Francia", "England": "Inglaterra", "Spain": "España",
+  "Portugal": "Portugal", "Netherlands": "Países Bajos",
+  "Belgium": "Bélgica", "Croatia": "Croacia", "Serbia": "Serbia",
+  "Switzerland": "Suiza", "Scotland": "Escocia", "Austria": "Austria",
+  "Norway": "Noruega", "Japan": "Japón", "South Korea": "Corea del Sur",
+  "Australia": "Australia", "Morocco": "Marruecos", "Senegal": "Senegal",
+};
+
+const EMOJIS = {
+  // Selecciones
+  "Italia": "🇮🇹", "Irlanda del Norte": "🇬🇧", "Gales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿", "Bosnia": "🇧🇦",
+  "Ucrania": "🇺🇦", "Suecia": "🇸🇪", "Polonia": "🇵🇱", "Albania": "🇦🇱",
+  "Turquía": "🇹🇷", "Rumanía": "🇷🇴", "Eslovaquia": "🇸🇰", "Kosovo": "🇽🇰",
+  "Dinamarca": "🇩🇰", "Macedonia del Norte": "🇲🇰", "Rep. Checa": "🇨🇿",
+  "Irlanda": "🇮🇪", "Bolivia": "🇧🇴", "Surinam": "🇸🇷",
+  "Nueva Caledonia": "🇳🇨", "Jamaica": "🇯🇲", "R.D. Congo": "🇨🇩", "Irak": "🇮🇶",
+  "México": "🇲🇽", "EE.UU.": "🇺🇸", "Canadá": "🇨🇦", "Brasil": "🇧🇷",
+  "Argentina": "🇦🇷", "Alemania": "🇩🇪", "Francia": "🇫🇷", "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  "España": "🇪🇸", "Portugal": "🇵🇹", "Países Bajos": "🇳🇱", "Bélgica": "🇧🇪",
+  "Croacia": "🇭🇷", "Suiza": "🇨🇭", "Escocia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿", "Austria": "🇦🇹",
+  "Noruega": "🇳🇴", "Japón": "🇯🇵", "Corea del Sur": "🇰🇷",
+  "Australia": "🇦🇺", "Marruecos": "🇲🇦", "Senegal": "🇸🇳",
+};
+
+function traducir(nombre) {
+  return NOMBRES_ES[nombre] || nombre;
+}
+function emoji(nombre) {
+  return EMOJIS[nombre] || "⚽";
+}
+
+// ─── IDs de ligas en TheSportsDB ───────────────────────────────────────────
+const LIGAS = {
+  ligamx:       { id: "4406", nombre: "Liga MX",           flag: "🇲🇽" },
+  ucl:          { id: "4480", nombre: "Champions League",  flag: "🏆" },
+};
+
+// Partidos de eliminatorias y mundial se generan con IA (la API free no los cubre)
+const ELIMINATORIAS_FIJOS = [
+  { comp: "eliminatorias", nombre: "Eliminatorias UEFA → Mundial 2026", flag: "🇪🇺",
+    partidos: [
+      {home:"Italia",    away:"Irlanda del Norte", sh:null, sa:null, status:"upcoming", min:"17:45"},
+      {home:"Gales",     away:"Bosnia",            sh:null, sa:null, status:"upcoming", min:"17:45"},
+      {home:"Ucrania",   away:"Suecia",            sh:null, sa:null, status:"upcoming", min:"17:45"},
+      {home:"Polonia",   away:"Albania",           sh:null, sa:null, status:"upcoming", min:"17:45"},
+      {home:"Turquía",   away:"Rumanía",           sh:null, sa:null, status:"upcoming", min:"17:45"},
+      {home:"Eslovaquia",away:"Kosovo",            sh:null, sa:null, status:"upcoming", min:"17:45"},
+      {home:"Dinamarca", away:"Macedonia del Norte",sh:null,sa:null, status:"upcoming", min:"17:45"},
+      {home:"Rep. Checa",away:"Irlanda",           sh:null, sa:null, status:"upcoming", min:"17:45"},
+    ]
+  },
+  { comp: "eliminatorias", nombre: "Play-Off Intercontinental", flag: "🌎",
+    partidos: [
+      {home:"Bolivia",        away:"Surinam",        sh:null, sa:null, status:"upcoming", min:"19:00"},
+      {home:"Nueva Caledonia",away:"Jamaica",        sh:null, sa:null, status:"upcoming", min:"22:00"},
+    ]
+  },
+];
+
+let activeTab = "todos";
+let cachedData = {};
+
+function setTab(tab, el) {
+  activeTab = tab;
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  mostrarContenido();
+}
+
+// ─── Fetch partidos de hoy desde TheSportsDB ──────────────────────────────
+async function fetchLiga(ligaId) {
+  if (cachedData[ligaId]) return cachedData[ligaId];
+  try {
+    const hoy = new Date().toISOString().split("T")[0];
+    const url = `https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${hoy}&l=${ligaId}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    cachedData[ligaId] = data.events || [];
+    return cachedData[ligaId];
+  } catch(e) {
+    return [];
+  }
+}
+
+function parsearEvento(ev) {
+  const sh = ev.intHomeScore !== null && ev.intHomeScore !== "" ? parseInt(ev.intHomeScore) : null;
+  const sa = ev.intAwayScore !== null && ev.intAwayScore !== "" ? parseInt(ev.intAwayScore) : null;
+  let status = "upcoming", min = ev.strTime ? ev.strTime.slice(0,5) : "--:--";
+
+  if (ev.strStatus === "Match Finished" || ev.strStatus === "FT") {
+    status = "finished"; min = "FT";
+  } else if (ev.strProgress && ev.strProgress !== "") {
+    status = "live"; min = ev.strProgress;
+  } else if (sh !== null) {
+    status = "live"; min = ev.strProgress || "En vivo";
+  }
+
+  return {
+    home: traducir(ev.strHomeTeam),
+    away: traducir(ev.strAwayTeam),
+    sh, sa, status, min
+  };
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────
+function renderPartido(m) {
+  const isUp = m.status === "upcoming";
+  const hWin = !isUp && m.sh !== null && m.sh > m.sa;
+  const aWin = !isUp && m.sa !== null && m.sa > m.sh;
+  const tClass = m.status === "live" ? "live" : m.status === "finished" ? "fin" : "up";
+  const sH = isUp || m.sh === null ? "-" : m.sh;
+  const sA = isUp || m.sa === null ? "-" : m.sa;
+  const eH = emoji(m.home);
+  const eA = emoji(m.away);
+
+  return `<div class="match-row">
+    <div class="time-col"><span class="m-time ${tClass}">${m.min}</span></div>
+    <div class="teams-col">
+      <div class="team-line">
+        <div class="crest">${eH}</div>
+        <span class="t-name ${aWin ? "dim" : ""}">${m.home}</span>
+      </div>
+      <div class="team-line">
+        <div class="crest">${eA}</div>
+        <span class="t-name ${hWin ? "dim" : ""}">${m.away}</span>
+      </div>
+    </div>
+    <div class="score-col">
+      <div class="score-pair">
+        <span class="s-num ${aWin ? "dim" : ""}">${sH}</span>
+        <span class="s-num ${hWin ? "dim" : ""}">${sA}</span>
+      </div>
+    </div>
+    <div class="bar-col">
+      <div class="win-bar ${hWin ? "w" : ""}"></div>
+      <div class="win-bar ${aWin ? "w" : ""}"></div>
+    </div>
+  </div>`;
+}
+
+function renderSeccion(nombre, flag, partidos) {
+  if (!partidos.length) return "";
+  const live = partidos.filter(p => p.status === "live").length;
+  const badge = live > 0
+    ? `<span class="badge">${live} EN VIVO</span>`
+    : `<span class="badge finished">${partidos.length} partidos</span>`;
+  const mitad = Math.ceil(partidos.length / 2);
+  const izq = partidos.slice(0, mitad).map(renderPartido).join("");
+  const der = partidos.slice(mitad).map(renderPartido).join("");
+
+  return `<div>
+    <div class="section-title">
+      <span class="flag">${flag}</span>
+      <span class="name">${nombre}</span>
+      ${badge}
+    </div>
+    <div class="grid">
+      <div>${izq}</div>
+      <div class="divider"></div>
+      <div>${der}</div>
+    </div>
+  </div>`;
+}
+
+async function mostrarContenido() {
+  const content = document.getElementById("content");
+  content.innerHTML = '<div class="loading">Cargando...</div>';
+
+  let html = "";
+
+  // Liga MX
+  if (activeTab === "todos" || activeTab === "ligamx") {
+    const eventos = await fetchLiga(LIGAS.ligamx.id);
+    const partidos = eventos.map(parsearEvento);
+    if (partidos.length) {
+      html += renderSeccion(LIGAS.ligamx.nombre, LIGAS.ligamx.flag, partidos);
+    } else if (activeTab === "ligamx") {
+      html += `<div class="loading">Sin partidos de Liga MX hoy</div>`;
+    }
+  }
+
+  // Champions League
+  if (activeTab === "todos" || activeTab === "ucl") {
+    const eventos = await fetchLiga(LIGAS.ucl.id);
+    const partidos = eventos.map(parsearEvento);
+    if (partidos.length) {
+      html += renderSeccion(LIGAS.ucl.nombre, LIGAS.ucl.flag, partidos);
+    } else if (activeTab === "ucl") {
+      html += `<div class="loading">Sin partidos de Champions hoy</div>`;
+    }
+  }
+
+  // Eliminatorias (datos fijos actualizables)
+  if (activeTab === "todos" || activeTab === "eliminatorias") {
+    ELIMINATORIAS_FIJOS.forEach(comp => {
+      html += renderSeccion(comp.nombre, comp.flag, comp.partidos);
+    });
+  }
+
+  // Mundial 2026 - placeholder
+  if (activeTab === "mundial") {
+    html += `<div class="loading">⚽ El Mundial 2026 comienza el 11 de junio de 2026.<br><br>Los resultados aparecerán aquí automáticamente cuando inicien los partidos.</div>`;
+  }
+
+  content.innerHTML = html || '<div class="loading">Sin partidos disponibles ahora</div>';
+}
+
+// ─── Reloj ────────────────────────────────────────────────────────────────
+function tick() {
+  const now = new Date();
+  document.getElementById("clock").textContent =
+    now.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+tick(); setInterval(tick, 1000);
+
+// ─── Auto-refresh cada 60 segundos ───────────────────────────────────────
+function refresh() {
+  cachedData = {};
+  mostrarContenido();
+}
+setInterval(refresh, 60000);
+
+// ─── Inicio ───────────────────────────────────────────────────────────────
+mostrarContenido();
+</script>
+</body>
+</html>
