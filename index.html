@@ -12,7 +12,6 @@
       --red:#d42b2b;--green:#22c97a;--live:#e03030;
     }
     body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text1);}
-
     .hdr{background:#1a1a1a;border-bottom:3px solid var(--red);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;}
     .channel-name{font-size:30px;font-weight:700;letter-spacing:-0.5px;color:var(--red);}
     .hdr-right{display:flex;align-items:center;gap:12px;}
@@ -25,53 +24,43 @@
     .spin{display:inline-block;}
     .spinning .spin{animation:rot 0.7s linear infinite;}
     @keyframes rot{to{transform:rotate(360deg)}}
-
     .nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto;scrollbar-width:none;}
     .nav::-webkit-scrollbar{display:none}
     .nav-tab{padding:10px 16px;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.15s;}
     .nav-tab.active{color:var(--text1);border-bottom-color:var(--red);}
     .nav-tab:hover{color:var(--text1);}
-
     .section-hdr{display:flex;align-items:center;gap:10px;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--border);}
     .s-flag{font-size:18px;}
     .s-name{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:var(--text1);}
     .s-badge{margin-left:auto;color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;}
     .s-badge.live{background:var(--live);}
     .s-badge.fin{background:var(--bg3);color:var(--text3);}
-
     .grid{display:grid;grid-template-columns:1fr 1px 1fr;}
     .divider{background:var(--border);}
-
     .match-row{display:flex;align-items:center;padding:0 16px;min-height:70px;border-bottom:1px solid var(--border);background:var(--bg);transition:.1s;}
     .match-row:hover{background:var(--bg3);}
     .match-row:last-child{border-bottom:none;}
-
     .time-col{width:42px;flex-shrink:0;text-align:center;}
     .m-time{font-size:13px;font-weight:700;}
     .m-time.live{color:var(--live);}
     .m-time.fin{color:var(--text3);}
     .m-time.up{color:#4a9eff;}
-
     .teams-col{flex:1;padding:0 10px;}
     .team-line{display:flex;align-items:center;gap:8px;padding:4px 0;}
     .crest{width:24px;height:24px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:0.5px solid var(--border);}
     .t-name{font-size:15px;color:var(--text1);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .t-name.dim{color:var(--text3);}
-
     .score-col{width:42px;text-align:center;flex-shrink:0;}
     .score-pair{display:flex;flex-direction:column;gap:5px;align-items:center;}
     .s-num{font-size:18px;font-weight:700;color:var(--text1);line-height:1;}
     .s-num.dim{color:var(--text3);font-weight:500;}
-
     .bar-col{width:14px;flex-shrink:0;display:flex;flex-direction:column;gap:14px;align-items:center;margin-left:2px;}
     .win-bar{width:3px;height:15px;border-radius:2px;background:var(--border);}
     .win-bar.w{background:var(--red);}
-
     .footer{background:#1a1a1a;border-top:3px solid var(--red);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;}
     .footer-left{font-size:12px;color:var(--text3);}
     .footer-left span{color:var(--red);font-weight:600;}
     .clock{font-size:13px;color:var(--text3);}
-
     .loading{text-align:center;padding:50px 24px;color:var(--text3);font-size:15px;line-height:2;}
   </style>
 </head>
@@ -88,7 +77,7 @@
 </div>
 
 <div class="nav">
-  <div class="nav-tab active"  onclick="setTab('todos',this)">Todos</div>
+  <div class="nav-tab active" onclick="setTab('todos',this)">Todos</div>
   <div class="nav-tab" onclick="setTab('ligamx',this)">Liga MX</div>
   <div class="nav-tab" onclick="setTab('ucl',this)">Champions</div>
   <div class="nav-tab" onclick="setTab('eliminatorias',this)">Eliminatorias</div>
@@ -103,13 +92,14 @@
 </div>
 
 <script>
-let activeTab = "todos";
-let cachedData = null;
+var activeTab = "todos";
+var cachedData = null;
+var PROXY = "https://rojnegro-proxy.warriorzetina.workers.dev";
 
-const EMOJIS = {
+var EMOJIS = {
   "América":"🦅","Chivas":"🐐","Cruz Azul":"⚙️","Tigres":"🐯",
   "Monterrey":"🔵","Toluca":"🔴","Atlas":"🦊","Santos":"🌊",
-  "Necaxa":"⚡","Pachuca":"⚽","León":"🦁","Puebla":"🦇",
+  "Necaxa":"⚡","Pachuca":"⚽","León":"🦁","Puebla":"🏙️",
   "Mazatlán":"🌊","Juárez":"🏜️","Querétaro":"🐓","San Luis":"🔴",
   "Tijuana":"🐦","Pumas":"🐆",
   "Real Madrid":"👑","Barcelona":"🔵","Bayern Munich":"🔴",
@@ -122,159 +112,98 @@ const EMOJIS = {
   "Dinamarca":"🇩🇰","Macedonia del Norte":"🇲🇰","Rep. Checa":"🇨🇿","Irlanda":"🇮🇪",
   "México":"🇲🇽","EE.UU.":"🇺🇸","Canadá":"🇨🇦","Brasil":"🇧🇷",
   "Argentina":"🇦🇷","Alemania":"🇩🇪","Francia":"🇫🇷","España":"🇪🇸",
-  "Portugal":"🇵🇹","Países Bajos":"🇳🇱","Japón":"🇯🇵","Marruecos":"🇲🇦",
+  "Portugal":"🇵🇹","Países Bajos":"🇳🇱","Japón":"🇯🇵","Marruecos":"🇲🇦"
 };
 
-function getEmoji(n){ return EMOJIS[n] || "⚽"; }
-
-function setTab(tab, el){
-  activeTab = tab;
-  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
-  el.classList.add("active");
-  if(cachedData) renderTodo(cachedData);
+function getEmoji(n) {
+  return EMOJIS[n] || "⚽";
 }
 
-async function cargar(){
-  const btn = document.getElementById("refreshBtn");
-  btn.disabled = true; btn.classList.add("spinning");
+function setTab(tab, el) {
+  activeTab = tab;
+  var tabs = document.querySelectorAll(".nav-tab");
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.remove("active");
+  }
+  el.classList.add("active");
+  if (cachedData) renderTodo(cachedData);
+}
+
+function cargar() {
+  var btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.classList.add("spinning");
   document.getElementById("content").innerHTML = '<div class="loading">⚽ Obteniendo resultados...</div>';
 
-  const hoy = new Date().toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long"});
+  var hoy = new Date().toLocaleDateString("es-MX", {weekday:"long", day:"numeric", month:"long"});
 
-  const prompt = `Hoy es ${hoy}. Genera resultados de fútbol REALES o muy verosímiles para hoy.
-Responde SOLO con JSON puro, sin backticks ni texto extra. Estructura exacta:
-{
-  "secciones": [
-    {
-      "id": "ligamx",
-      "nombre": "Liga MX",
-      "flag": "🇲🇽",
-      "partidos": [
-        {
-          "home": "América",
-          "away": "Chivas",
-          "sh": 2,
-          "sa": 0,
-          "status": "live",
-          "min": "67"
-        }
-      ]
-    }
-  ]
-}
+  var prompt = "Hoy es " + hoy + ". Genera resultados de fútbol REALES o muy verosímiles para hoy.\nResponde SOLO con JSON puro, sin backticks ni texto extra. Estructura exacta:\n{\"secciones\":[{\"id\":\"ligamx\",\"nombre\":\"Liga MX\",\"flag\":\"🇲🇽\",\"partidos\":[{\"home\":\"América\",\"away\":\"Chivas\",\"sh\":2,\"sa\":0,\"status\":\"live\",\"min\":\"67\"}]}]}\nReglas:\n- Incluye secciones con id: ligamx, ucl, eliminatorias, mundial (solo si hay partidos hoy)\n- status: live, finished, upcoming\n- min: para live=minuto (ej '45'), finished='FT', upcoming=horario (ej '20:00')\n- sh y sa: para upcoming usa null\n- Nombres en español\n- Entre 2 y 8 partidos por sección";
 
-Reglas:
-- Incluye secciones: ligamx, ucl (Champions League), eliminatorias (UEFA o Concacaf si aplica), mundial (si hay partidos del Mundial 2026 hoy, si no omite esta sección).
-- status puede ser: "live", "finished", "upcoming"
-- min: para live = minuto actual (ej "45"), para finished = "FT", para upcoming = horario (ej "20:00")
-- sh y sa: para upcoming usa null
-- Para Liga MX y Champions usa equipos reales según el calendario de hoy
-- Para eliminatorias usa selecciones reales
-- Si no hay partidos de una liga hoy, no incluyas esa sección
-- Nombres de equipos y selecciones en español
-- Incluye entre 2 y 8 partidos por sección`;
-
-  try {
-    const res = await fetch("https://rojinegro-proxy.warriorzetina.workers.dev", {
-      method: "POST",
-     headers: { "Content-Type": "application/json" },
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-    const d = await res.json();
-    const raw = d.content.map(x => x.text || "").join("").replace(/```json|```/g,"").trim();
+  fetch(PROXY, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1500,
+      messages: [{ role: "user", content: prompt }]
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(d) {
+    var raw = d.content.map(function(x) { return x.text || ""; }).join("").replace(/```json|```/g, "").trim();
     cachedData = JSON.parse(raw);
     renderTodo(cachedData);
-  } catch(e) {
-    document.getElementById("content").innerHTML =
-      '<div class="loading">❌ Error al cargar. Haz clic en Actualizar para reintentar.</div>';
-  }
-
-  btn.disabled = false; btn.classList.remove("spinning");
+    btn.disabled = false;
+    btn.classList.remove("spinning");
+  })
+  .catch(function(e) {
+    document.getElementById("content").innerHTML = '<div class="loading">❌ Error al cargar. Haz clic en Actualizar para reintentar.</div>';
+    btn.disabled = false;
+    btn.classList.remove("spinning");
+  });
 }
 
-function renderTodo(data){
-  let secciones = data.secciones;
-  if(activeTab !== "todos") secciones = secciones.filter(s => s.id === activeTab);
-
-  if(!secciones || !secciones.length){
-    document.getElementById("content").innerHTML =
-      '<div class="loading">Sin partidos disponibles para esta selección.</div>';
+function renderTodo(data) {
+  var secciones = data.secciones;
+  if (activeTab !== "todos") {
+    secciones = secciones.filter(function(s) { return s.id === activeTab; });
+  }
+  if (!secciones || !secciones.length) {
+    document.getElementById("content").innerHTML = '<div class="loading">Sin partidos disponibles para esta selección.</div>';
     return;
   }
-
   document.getElementById("content").innerHTML = secciones.map(renderSeccion).join("");
 }
 
-function renderSeccion(sec){
-  const live = sec.partidos.filter(p=>p.status==="live").length;
-  const badge = live > 0
-    ? `<span class="s-badge live">${live} EN VIVO</span>`
-    : `<span class="s-badge fin">${sec.partidos.length} partidos</span>`;
-
-  const mitad = Math.ceil(sec.partidos.length / 2);
-  const izq = sec.partidos.slice(0, mitad).map(renderPartido).join("");
-  const der = sec.partidos.slice(mitad).map(renderPartido).join("");
-
-  return `<div>
-    <div class="section-hdr">
-      <span class="s-flag">${sec.flag}</span>
-      <span class="s-name">${sec.nombre}</span>
-      ${badge}
-    </div>
-    <div class="grid">
-      <div>${izq}</div>
-      <div class="divider"></div>
-      <div>${der}</div>
-    </div>
-  </div>`;
+function renderSeccion(sec) {
+  var live = sec.partidos.filter(function(p) { return p.status === "live"; }).length;
+  var badge = live > 0
+    ? '<span class="s-badge live">' + live + ' EN VIVO</span>'
+    : '<span class="s-badge fin">' + sec.partidos.length + ' partidos</span>';
+  var mitad = Math.ceil(sec.partidos.length / 2);
+  var izq = sec.partidos.slice(0, mitad).map(renderPartido).join("");
+  var der = sec.partidos.slice(mitad).map(renderPartido).join("");
+  return '<div><div class="section-hdr"><span class="s-flag">' + sec.flag + '</span><span class="s-name">' + sec.nombre + '</span>' + badge + '</div><div class="grid"><div>' + izq + '</div><div class="divider"></div><div>' + der + '</div></div></div>';
 }
 
-function renderPartido(m){
-  const isUp = m.status === "upcoming";
-  const sh = isUp || m.sh === null ? "-" : m.sh;
-  const sa = isUp || m.sa === null ? "-" : m.sa;
-  const hWin = !isUp && m.sh !== null && m.sh > m.sa;
-  const aWin = !isUp && m.sa !== null && m.sa > m.sh;
-  const tClass = m.status === "live" ? "live" : m.status === "finished" ? "fin" : "up";
-
-  return `<div class="match-row">
-    <div class="time-col"><span class="m-time ${tClass}">${isUp ? m.min : m.status==="finished" ? "FT" : m.min+"'"}</span></div>
-    <div class="teams-col">
-      <div class="team-line">
-        <div class="crest">${getEmoji(m.home)}</div>
-        <span class="t-name ${aWin?"dim":""}">${m.home}</span>
-      </div>
-      <div class="team-line">
-        <div class="crest">${getEmoji(m.away)}</div>
-        <span class="t-name ${hWin?"dim":""}">${m.away}</span>
-      </div>
-    </div>
-    <div class="score-col">
-      <div class="score-pair">
-        <span class="s-num ${aWin?"dim":""}">${sh}</span>
-        <span class="s-num ${hWin?"dim":""}">${sa}</span>
-      </div>
-    </div>
-    <div class="bar-col">
-      <div class="win-bar ${hWin?"w":""}"></div>
-      <div class="win-bar ${aWin?"w":""}"></div>
-    </div>
-  </div>`;
+function renderPartido(m) {
+  var isUp = m.status === "upcoming";
+  var sh = (isUp || m.sh === null) ? "-" : m.sh;
+  var sa = (isUp || m.sa === null) ? "-" : m.sa;
+  var hWin = !isUp && m.sh !== null && m.sh > m.sa;
+  var aWin = !isUp && m.sa !== null && m.sa > m.sh;
+  var tClass = m.status === "live" ? "live" : m.status === "finished" ? "fin" : "up";
+  var minLabel = isUp ? m.min : (m.status === "finished" ? "FT" : m.min + "'");
+  return '<div class="match-row"><div class="time-col"><span class="m-time ' + tClass + '">' + minLabel + '</span></div><div class="teams-col"><div class="team-line"><div class="crest">' + getEmoji(m.home) + '</div><span class="t-name ' + (aWin ? "dim" : "") + '">' + m.home + '</span></div><div class="team-line"><div class="crest">' + getEmoji(m.away) + '</div><span class="t-name ' + (hWin ? "dim" : "") + '">' + m.away + '</span></div></div><div class="score-col"><div class="score-pair"><span class="s-num ' + (aWin ? "dim" : "") + '">' + sh + '</span><span class="s-num ' + (hWin ? "dim" : "") + '">' + sa + '</span></div></div><div class="bar-col"><div class="win-bar ' + (hWin ? "w" : "") + '"></div><div class="win-bar ' + (aWin ? "w" : "") + '"></div></div></div>';
 }
 
-function tick(){
-  const now = new Date();
-  document.getElementById("clock").textContent =
-    now.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+function tick() {
+  var now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString("es-MX", {hour:"2-digit", minute:"2-digit", second:"2-digit"});
 }
-tick(); setInterval(tick, 1000);
-
-// Auto-refresh cada 2 minutos
-setInterval(() => { cachedData = null; cargar(); }, 120000);
-
+tick();
+setInterval(tick, 1000);
+setInterval(function() { cachedData = null; cargar(); }, 120000);
 cargar();
 </script>
 </body>
